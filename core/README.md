@@ -11,10 +11,14 @@ cd shell-scripts/demo/
 # 1. CI demo: cloud deploy for pipeline to deploy, skaffold for ci, cloud build for whole workflow
 ```
 cd ../../agones/agones
-gcloud builds submit --config=cloudbuild-clouddeploy.yaml --substitutions=TAG_NAME=$(date +%y%m%d-%H%M%S)
-gcloud beta deploy apply --file ./examples/simple-game-server/clouddeploy-demo.yaml --region=us-central1 --project=${PROJECT_ID}
-cd ../../core/quilkin-test/
-python quilkin.py <ip> <port>
+export PROJECT_ID=<PROJECT_ID>
+./create-cloud-deploy.sh
+
+gcloud builds submit --config=cloudbuild-clouddeploy.yaml --substitutions=TAG_NAME=$(date +%y%m%d-%H%M%S),_PROJECT_ID=${PROJECT_ID}
+kubectl get gameserver
+nc -u <ip> <port>
+hello
+ACK V1: hello
 ```
 See notes.txt in ci folder, you need to update main.go in examples/simple-game-server to see the updates after deploy to corresponding environment
 

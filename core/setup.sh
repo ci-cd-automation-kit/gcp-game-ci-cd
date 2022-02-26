@@ -8,6 +8,7 @@ export CLUSTER_NAME=$CLUSTER_NAME
 gcloud services enable compute.googleapis.com
 gcloud services enable container.googleapis.com
 gcloud services enable cloudbuild.googleapis.com
+gcloud services enable clouddeploy.googleapis.com
 gcloud services enable orgpolicy.googleapis.com
 
 gcloud config set compute/region us-central1
@@ -18,28 +19,32 @@ GCP_REGION=$(gcloud config get-value compute/region)
 PROJECT_NUMBER=$(gcloud projects list --filter="$PROJECT_ID" --format="value(PROJECT_NUMBER)")
 
 gcloud projects add-iam-policy-binding ${PROJECT_ID} \
-     --member=serviceAccount:${PROJECT_NUMBER}@cloudbuild.gserviceaccount.com \
-     --role roles/iam.serviceAccountTokenCreator
+    --member=serviceAccount:${PROJECT_NUMBER}@cloudbuild.gserviceaccount.com \
+    --role roles/iam.serviceAccountTokenCreator
 
 gcloud projects add-iam-policy-binding ${PROJECT_ID} \
     --member=serviceAccount:${PROJECT_NUMBER}@cloudbuild.gserviceaccount.com \
-     --role roles/container.clusterAdmin
+    --role roles/container.clusterAdmin
 
 gcloud projects add-iam-policy-binding ${PROJECT_ID} \
     --member=serviceAccount:${PROJECT_NUMBER}@cloudbuild.gserviceaccount.com \
-     --role roles/container.admin
+    --role roles/container.admin
 
 gcloud projects add-iam-policy-binding ${PROJECT_ID} \
     --member=serviceAccount:${PROJECT_NUMBER}@cloudbuild.gserviceaccount.com \
-     --role roles/compute.admin
+    --role roles/compute.admin
 
 gcloud projects add-iam-policy-binding ${PROJECT_ID} \
     --member=serviceAccount:${PROJECT_NUMBER}@cloudbuild.gserviceaccount.com \
-     --role roles/iam.serviceAccountUser
+    --role roles/iam.serviceAccountUser
 
 gcloud projects add-iam-policy-binding ${PROJECT_ID} \
     --member=serviceAccount:${PROJECT_NUMBER}@cloudbuild.gserviceaccount.com \
-     --role roles/compute.storageAdmin
+    --role roles/compute.storageAdmin
+
+gcloud projects add-iam-policy-binding ${PROJECT_ID} \
+    --member=serviceAccount:${PROJECT_NUMBER}@cloudbuild.gserviceaccount.com \
+    --role roles/clouddeploy.admin
 
 #Please make sure you have the org admin permissions
 sed -i .bak "s/PROJECT_ID/${PROJECT_ID}/" org-policies/requireShieldedVm.yaml

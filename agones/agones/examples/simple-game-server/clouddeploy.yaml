@@ -17,7 +17,7 @@ metadata:
  name: dev
 description: development cluster
 gke:
- cluster: projects/cn-gaming-cicd/locations/us-central1/clusters/cluster-demo-1
+ cluster: projects/PROJECT_ID/locations/us-central1/clusters/demo-1
 ---
 
 apiVersion: deploy.cloud.google.com/v1beta1
@@ -27,4 +27,4 @@ metadata:
 description: production cluster
 requireApproval: true
 gke:
- cluster: projects/cn-gaming-cicd/locations/us-central1/clusters/tf-cluster-1
+ cluster: projects/PROJECT_ID/locations/us-central1/clusters/demo-2

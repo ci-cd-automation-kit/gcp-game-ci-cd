@@ -281,7 +281,7 @@ func udpReadWriteLoop(conn net.PacketConn, stop chan struct{}, s *sdk.SDK) {
 		if err != nil {
 			response = "ERROR: " + response + "\n"
 		} else if addACK {
-			response = "ACK V1: " + response + "\n"
+			response = "ACK Hello: " + response + "\n"
 		}
 
 		udpRespond(conn, sender, response)
