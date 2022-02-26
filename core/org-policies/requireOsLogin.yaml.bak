@@ -1,0 +1,4 @@
+name: projects/flius-vpc-2/policies/compute.requireOsLogin
+spec:
+  rules:
+    - enforce: false

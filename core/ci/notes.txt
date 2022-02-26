@@ -1,0 +1,3 @@
+#cd ../../agones/agones
+
+gcloud builds submit --config=cloudbuild-clouddeploy.yaml --substitutions=TAG_NAME=$(date +%y%m%d-%s)

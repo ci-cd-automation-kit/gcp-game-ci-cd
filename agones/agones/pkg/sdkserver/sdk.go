@@ -1,0 +1,81 @@
+// Copyright 2018 Google LLC All Rights Reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+package sdkserver
+
+import (
+	agonesv1 "agones.dev/agones/pkg/apis/agones/v1"
+	"agones.dev/agones/pkg/sdk"
+	"agones.dev/agones/pkg/util/runtime"
+)
+
+const (
+	// metadataPrefix prefix for labels and annotations
+	metadataPrefix = "agones.dev/sdk-"
+)
+
+// convert converts a K8s GameServer object, into a gRPC SDK GameServer object
+func convert(gs *agonesv1.GameServer) *sdk.GameServer {
+	meta := gs.ObjectMeta
+	status := gs.Status
+	health := gs.Spec.Health
+	result := &sdk.GameServer{
+		ObjectMeta: &sdk.GameServer_ObjectMeta{
+			Name:              meta.Name,
+			Namespace:         meta.Namespace,
+			Uid:               string(meta.UID),
+			ResourceVersion:   meta.ResourceVersion,
+			Generation:        meta.Generation,
+			CreationTimestamp: meta.CreationTimestamp.Unix(),
+			Annotations:       meta.Annotations,
+			Labels:            meta.Labels,
+		},
+		Spec: &sdk.GameServer_Spec{
+			Health: &sdk.GameServer_Spec_Health{
+				Disabled:            health.Disabled,
+				PeriodSeconds:       health.PeriodSeconds,
+				FailureThreshold:    health.FailureThreshold,
+				InitialDelaySeconds: health.InitialDelaySeconds,
+			},
+		},
+		Status: &sdk.GameServer_Status{
+			State:   string(status.State),
+			Address: status.Address,
+		},
+	}
+	if meta.DeletionTimestamp != nil {
+		result.ObjectMeta.DeletionTimestamp = meta.DeletionTimestamp.Unix()
+	}
+
+	// loop around and add all the ports
+	for _, p := range status.Ports {
+		grpcPort := &sdk.GameServer_Status_Port{
+			Name: p.Name,
+			Port: p.Port,
+		}
+		result.Status.Ports = append(result.Status.Ports, grpcPort)
+	}
+
+	if runtime.FeatureEnabled(runtime.FeaturePlayerTracking) {
+		if gs.Status.Players != nil {
+			result.Status.Players = &sdk.GameServer_Status_PlayerStatus{
+				Count:    gs.Status.Players.Count,
+				Capacity: gs.Status.Players.Capacity,
+				Ids:      gs.Status.Players.IDs,
+			}
+		}
+	}
+
+	return result
+}

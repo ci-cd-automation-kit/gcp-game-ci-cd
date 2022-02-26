@@ -1,0 +1,4 @@
+name: projects/PROJECT_ID/policies/compute.requireShieldedVm
+spec:
+  rules:
+    - enforce: false

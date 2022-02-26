@@ -1,0 +1,30 @@
+{
+    "author": "Google LLC",
+    "bugs": {
+        "url": "https://github.com/googleforgames/agones/issues"
+    },
+    "dependencies": {
+        "@grpc/grpc-js": "1.2.12",
+        "google-protobuf": "3.15.6"
+    },
+    "description": "Game Server SDK for Agones, the open source project for hosting dedicated game servers on Kubernetes",
+    "devDependencies": {
+        "eslint": "^7.26.0",
+        "jasmine": "^3.7.0",
+        "nyc": "^15.1.0"
+    },
+    "homepage": "https://agones.dev",
+    "license": "Apache-2.0",
+    "main": "src/index.js",
+    "name": "@google-cloud/agones-sdk",
+    "repository": "googleforgames/agones",
+    "scripts": {
+        "cover": "nyc jasmine",
+        "lint": "eslint --fix src spec",
+        "test": "jasmine"
+    },
+    "publishConfig": {
+        "access": "public"
+    },
+    "version": "1.17.0-dev"
+}

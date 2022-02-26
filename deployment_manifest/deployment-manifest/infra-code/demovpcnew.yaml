@@ -1,0 +1,10 @@
+apiVersion: compute.cnrm.cloud.google.com/v1beta1
+kind: ComputeNetwork
+metadata:
+  labels:
+    label-one: "value-one"
+  name: demovpcnew
+  namespace: config-control
+spec:
+  routingMode: GLOBAL
+  autoCreateSubnetworks: true

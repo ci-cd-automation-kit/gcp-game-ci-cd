@@ -1,0 +1,19 @@
+tags:
+  - gaming-ci-cd-platform
+steps:
+- name: gcr.io/k8s-skaffold/skaffold
+  args:
+    - skaffold
+    - build
+    - '--interactive=false'
+    - '--file-output=artifacts.json'
+    - '--tag=$TAG_NAME'
+- name: gcr.io/google.com/cloudsdktool/cloud-sdk
+  entrypoint: bash
+  args:
+    - '-c'
+    - >
+      gcloud beta deploy releases create simple-gameserver-rel-$TAG_NAME
+      --delivery-pipeline=clouddeploy-demo
+      --region=us-central1 --annotations=commitId=v1
+      --images=my-app-image=gcr.io/cn-gaming-cicd/simple-game-server:$TAG_NAME

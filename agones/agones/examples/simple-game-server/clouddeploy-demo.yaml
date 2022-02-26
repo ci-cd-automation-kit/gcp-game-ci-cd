@@ -1,0 +1,30 @@
+apiVersion: deploy.cloud.google.com/v1beta1
+kind: DeliveryPipeline
+metadata:
+ name: clouddeploy-demo
+description: main application pipeline
+serialPipeline:
+ stages:
+ - targetId: dev
+   profiles: []
+ - targetId: prod
+   profiles: []
+---
+
+apiVersion: deploy.cloud.google.com/v1beta1
+kind: Target
+metadata:
+ name: dev
+description: development cluster
+gke:
+ cluster: projects/flius-vpc-2/locations/us-central1/clusters/demo-1
+---
+
+apiVersion: deploy.cloud.google.com/v1beta1
+kind: Target
+metadata:
+ name: prod
+description: production cluster
+requireApproval: true
+gke:
+ cluster: projects/flius-vpc-2/locations/us-central1/clusters/demo-2

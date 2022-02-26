@@ -1,0 +1,1 @@
+{"builds":[{"imageName":"gcr.io/cn-gaming-cicd/simple-game-server","tag":"gcr.io/cn-gaming-cicd/simple-game-server:v1.16.0-19-g972e8b46-dirty@sha256:c0b9d1ed2517ed9b7503dcf3083d641ec718f406693d6565a3828065cae96b15"}]}

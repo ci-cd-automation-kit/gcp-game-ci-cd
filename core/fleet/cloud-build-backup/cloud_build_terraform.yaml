@@ -1,0 +1,77 @@
+# Webhook URL 
+# curl -X POST -H "application/json" "https://cloudbuild.googleapis.com/v1/projects/cn-gaming-cicd/triggers/core-trigger:webhook?key=AIzaSyBe45IJgmgE3Ssoekh77cl3Z1riBmG7N_I&secret=9LvtgKaNTnKA1ATGBA_167JJPIWynkbB" -d '{"cluster_name":"cluster-xyz", "region":"us-central1"}'
+steps:
+  # step 1: ssh authentication
+  - name: gcr.io/cloud-builders/git
+    args:
+      - '-c'
+      - >
+
+        echo "$$SSHKEY" > /root/.ssh/id_rsa
+
+        chmod 400 /root/.ssh/id_rsa
+
+        ssh-keyscan -t rsa gitlab.endpoints.cn-gaming-cicd.cloud.goog >>
+        /root/.ssh/known_hosts
+
+        ssh -T git@gitlab.endpoints.cn-gaming-cicd.cloud.goog
+    entrypoint: bash
+    secretEnv:
+      - SSHKEY
+    volumes:
+      - name: ssh
+        path: /root/.ssh
+  # step 2: git clone terraform config file
+  - name: gcr.io/cloud-builders/git
+    args:
+      - clone
+      - 'git@gitlab.endpoints.cn-gaming-cicd.cloud.goog:gaming-ci-cd-automation/core.git'
+      - ./core
+    volumes:
+      - name: ssh
+        path: /root/.ssh
+  # step 3: replace the project id, cluster name and region
+  - name: gcr.io/cloud-builders/git
+    args:
+      - "-c"
+      - |
+          sed -i'' -e  "s/YOUR_PROJECT_ID/$PROJECT_ID/g" terraform.tfvars
+          sed -i'' -e  "s/my-test-cluster/$_CLUSTER_NAME/g" terraform.tfvars
+          sed -i'' -e  "s/us-central1/$_REGION/g" terraform.tfvars
+    dir: core
+    id: Replace the project id
+    entrypoint: bash
+    volumes:
+      - name: ssh
+        path: /root/.ssh
+  # step 4: check the variables are replaced
+  - name: gcr.io/cloud-builders/git
+    args:
+      - '-c'
+      - >
+        cat terraform.tfvars
+    dir: core
+    id: Check the variable replacement
+    entrypoint: bash
+    volumes:
+      - name: ssh
+        path: /root/.ssh  
+  # step 5: terrafrom initialization, plan and apply
+  - name: 'hashicorp/terraform:1.0.5'
+    entrypoint: 'sh'
+    args:
+      - "-c"
+      - |
+          terraform init
+          terraform plan
+          terraform apply -auto-approve
+    dir: core
+    id: tf init
+    volumes:
+      - name: ssh
+        path: /root/.ssh
+timeout: 3600s
+availableSecrets:
+  secretManager:
+    - versionName: projects/$PROJECT_ID/secrets/ssh-key/versions/1
+      env: SSHKEY

@@ -1,0 +1,24 @@
+timeout: 3600s # 1-hr
+tags:
+  - gke-ci-cd-platform
+substitutions:
+  _PROJECT_ID: ${PROJECT_ID}
+  _GCP_REGION: ${GCP_REGION}
+  _CLUSTER_NAME: ${CLUSTER_NAME}
+options:
+  substitution_option: 'ALLOW_LOOSE'
+steps:
+- name: "gcr.io/${_PROJECT_ID}/gaming-ci-cd-platform-installer"
+  id: "create-cluster"
+  entrypoint: 'bash'
+  args:
+    - '-xe'
+    - '-c'
+    - |
+      sed -i'' -e  "s/PROJECT_ID/${_PROJECT_ID}/g" terraform.tfvars
+      sed -i'' -e  "s/GCP_REGION/${_GCP_REGION}/g" terraform.tfvars
+      sed -i'' -e  "s/CLUSTER_NAME/${_CLUSTER_NAME}/g" terraform.tfvars
+
+      terraform init
+      terraform plan -out=terraform.tfplan
+      terraform apply -auto-approve terraform.tfplan

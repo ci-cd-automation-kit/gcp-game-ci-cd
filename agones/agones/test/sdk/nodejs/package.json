@@ -1,0 +1,8 @@
+{
+    "dependencies": {
+        "@google-cloud/agones-sdk": "../../../sdks/nodejs"
+    },
+    "scripts": {
+        "testSDK": "node ./testSDKClient.js"
+    }
+}

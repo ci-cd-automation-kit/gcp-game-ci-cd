@@ -1,0 +1,20 @@
+timeout: 3600s
+tags:
+  - gaming-ci-cd-automation
+  - install-weavescope
+substitutions:
+  _PROJECT_ID: ${PROJECT_ID}
+  _CLUSTER_NAME: ${CLUSTER_NAME}
+  _GCP_REGION: ${GCP_REGION}
+options:
+  substitution_option: 'ALLOW_LOOSE'
+steps:
+- name: "gcr.io/${_PROJECT_ID}/gaming-ci-cd-platform-installer"
+  id: "install-weavescope"
+  entrypoint: bash
+  args:
+    - -c
+    - |
+      gcloud container clusters get-credentials ${_CLUSTER_NAME} --region ${_GCP_REGION}
+
+      kubectl apply -f "https://cloud.weave.works/k8s/scope.yaml?k8s-version=$(kubectl version | base64 | tr -d '\n')"

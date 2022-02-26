@@ -1,0 +1,23 @@
+gcloud projects add-iam-policy-binding cn-gaming-cicd \
+    --member=serviceAccount:$(gcloud projects describe cn-gaming-cicd \
+    --format="value(projectNumber)")-compute@developer.gserviceaccount.com \
+    --role="roles/clouddeploy.jobRunner"
+
+gcloud projects add-iam-policy-binding cn-gaming-cicd \
+    --member=serviceAccount:$(gcloud projects describe cn-gaming-cicd \
+    --format="value(projectNumber)")-compute@developer.gserviceaccount.com \
+    --role="roles/container.developer"
+
+gcloud container clusters create quickstart-cluster-qsdev --project=cn-gaming-cicd --region=us-central1
+
+gcloud container clusters create quickstart-cluster-qsprod --project=cn-gaming-cicd --region=us-central1
+
+# Please go to agones repo, under examples/simple-game-server to try ci.
+
+gcloud beta deploy apply --file clouddeploy.yaml --region=us-central1 --project=cn-gaming-cicd
+
+gcloud beta deploy releases create test-release-001 \
+  --project=cn-gaming-cicd \
+  --region=us-central1 \
+  --delivery-pipeline=my-demo-app-1 \
+  --images=my-app-image=k8s.gcr.io/echoserver:1.4

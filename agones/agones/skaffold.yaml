@@ -1,0 +1,15 @@
+apiVersion: skaffold/v2beta7
+kind: Config
+metadata:
+  name: simple-game-server
+build:
+  tagPolicy:
+    sha256: {}
+  artifacts:
+  - image: gcr.io/cn-gaming-cicd/simple-game-server
+    docker:
+      dockerfile: ./examples/simple-game-server/Dockerfile
+deploy:
+  kubectl:
+    manifests:
+      - ./examples/simple-game-server/fleet_configs_simple.yaml

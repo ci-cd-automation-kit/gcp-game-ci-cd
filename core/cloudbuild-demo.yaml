@@ -1,0 +1,88 @@
+timeout: 3600s
+tags:
+  - gaming-ci-cd-platform
+substitutions:
+  _PROJECT_ID: ${PROJECT_ID}
+  _GCP_REGION: ${GCP_REGION}
+  _CLUSTER_NAME: ${CLUSTER_NAME}
+
+options:
+  substitution_option: 'ALLOW_LOOSE'
+steps:
+- name: "gcr.io/cloud-builders/gcloud"
+  id: "build-install-image"
+  entrypoint: bash
+  args:
+    - -c
+    - |
+      gcloud builds submit --config=build-image/cloudbuild.yaml --substitutions=_PROJECT_ID=${_PROJECT_ID}
+
+- name: "gcr.io/${_PROJECT_ID}/gaming-ci-cd-platform-installer"
+  id: "create-cluster"
+  entrypoint: 'bash'
+  args:
+    - '-c'
+    - |
+      sed -i'' -e  "s/PROJECT_ID/${_PROJECT_ID}/g" terraform.tfvars
+      sed -i'' -e  "s/GCP_REGION/${_GCP_REGION}/g" terraform.tfvars
+      sed -i'' -e  "s/CLUSTER_NAME/${_CLUSTER_NAME}/g" terraform.tfvars
+
+      terraform init
+      terraform plan -out=terraform.tfplan
+      terraform apply -auto-approve terraform.tfplan
+  waitFor:
+    - build-install-image
+
+- name: "gcr.io/${_PROJECT_ID}/gaming-ci-cd-platform-installer"
+  id: "install-weavescope"
+  entrypoint: 'bash'
+  args:
+    - '-c'
+    - |
+      gcloud builds submit --config=modules/weavescope/cloudbuild.yaml --substitutions=_PROJECT_ID=${_PROJECT_ID},_CLUSTER_NAME=${_CLUSTER_NAME},_GCP_REGION=${_GCP_REGION}
+  waitFor:
+    - create-cluster
+
+- name: "gcr.io/${_PROJECT_ID}/gaming-ci-cd-platform-installer"
+  id: "install-fleet"
+  entrypoint: 'bash'
+  args:
+    - '-c'
+    - |
+      gcloud container clusters get-credentials ${_CLUSTER_NAME} --region ${_GCP_REGION}
+
+      kubectl apply -f ./fleet/fleet-blue.yaml
+      kubectl apply -f ./fleet/fleet-green.yaml
+
+      kubectl apply -f ./fleet/supertuxkart/fleet_supertuxkart_blue.yaml
+      kubectl apply -f ./fleet/supertuxkart/fleet_supertuxkart_green.yaml
+  waitFor:
+    - create-cluster
+
+- name: "gcr.io/${_PROJECT_ID}/gaming-ci-cd-platform-installer"
+  id: "install-prometheus-grafana"
+  entrypoint: 'bash'
+  args:
+    - '-c'
+    - |
+      gcloud container clusters get-credentials ${_CLUSTER_NAME} --region ${_GCP_REGION}
+      kubectl create namespace metrics
+
+      helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+      helm repo update
+
+      helm upgrade --install --wait prom prometheus-community/prometheus --version 11.16.2 --namespace metrics \
+          --set server.global.scrape_interval=30s \
+          --set server.persistentVolume.enabled=true \
+          --set server.persistentVolume.size=64Gi \
+          -f ./modules/prometheus/prometheus.yaml
+
+      kubectl apply -f ./modules/grafana/grafana/
+
+      helm repo add grafana https://grafana.github.io/helm-charts
+      helm repo update
+
+      helm upgrade --install --wait grafana grafana/grafana --version=6.17.5 --namespace metrics \
+        --set adminPassword=admin -f ./modules/grafana/grafana.yaml
+  waitFor:
+    - create-cluster

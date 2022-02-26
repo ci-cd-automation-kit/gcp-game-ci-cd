@@ -1,0 +1,80 @@
+# apiVersion: v1
+# kind: ConfigMap
+# metadata:
+#   name: quilkin-config-simple
+# data:
+#   quilkin.yaml: |  # quilkin configuration
+#     version: v1alpha1
+#     proxy:
+#       id: proxy-demo-simple
+#       port: 26002
+#     static:
+#       filters:
+#         - name: quilkin.extensions.filters.debug.v1alpha1.Debug # Debug filter: every packet will be logged
+#           config:
+#             id: debug-1
+#         - name: quilkin.extensions.filters.capture_bytes.v1alpha1.CaptureBytes # Capture and remove the authentication token
+#           config:
+#               strategy: PREFIX
+#               size: 3
+#               remove: true
+#               metadataKey: quilkin.dev
+#         - name: quilkin.extensions.filters.token_router.v1alpha1.TokenRouter
+#           config:
+#               metadataKey: quilkin.dev
+#       endpoints:
+#         - address: 127.0.0.1:7654
+#           metadata: # Metadata associated with the endpoint
+#             quilkin.dev:
+#               tokens:
+#                 - YWJj # abc
+#                 - MXg3aWp5Ng== # the connection byte array to route to, encoded as base64 (string value: 1x7ijy6)
+#                 - OGdqM3YyaQ== # (string value: 8gj3v2i)
+---
+apiVersion: "agones.dev/v1"
+kind: Fleet
+metadata:
+  name: simple-game-server
+spec:
+  replicas: 2
+  template:
+    spec:
+      container: simple-game-server
+      ports:
+      - name: default
+        containerPort: 7654
+        # containerPort: 26002
+        # container: quilkin-simple
+      template:
+        metadata:
+          annotations:
+            prometheus.io/scrape: "true"
+            prometheus.io/path: /metrics
+            prometheus.io/port: "9091"
+        spec:
+          containers:
+          - name: simple-game-server
+            imagePullPolicy: Always
+            image: my-app-image
+            resources:
+              requests:
+                memory: "64Mi"
+                cpu: "20m"
+              limits:
+                memory: "64Mi"
+                cpu: "20m"
+          # - name: quilkin-simple
+          #   image: us-docker.pkg.dev/quilkin/release/quilkin:0.1.0
+          #   volumeMounts:
+          #     - name: config-s
+          #       mountPath: "/etc/quilkin"
+          #   livenessProbe:
+          #     httpGet:
+          #       path: /live
+          #       port: 9091
+          #     initialDelaySeconds: 3
+          #     periodSeconds: 2
+          # volumes:
+          #   - name: config-s
+          #     configMap:
+          #       name: quilkin-config-simple

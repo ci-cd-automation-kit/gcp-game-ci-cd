@@ -1,0 +1,5 @@
+*.log
+
+.terraform*
+*.tfstate*
+*.tfplan
