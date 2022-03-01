@@ -1,6 +1,0 @@
-./demo.sh --project-id cn-gaming-cicd --secret-name fan-secret --trigger-name fan-trigger --cluster-name tf-cluster-1 --region us-central1 --create-or-build gameserver --config-gs fleet-blue.yaml
-
-
-./demo.sh --project-id cn-gaming-cicd --secret-name fan-demo-script-secret-2 --trigger-name fan-demo-trigger-2 \
---config ../cloud-build/cloud_build_fleet_configs.yaml --cluster-name tf-cluster-1 --region us-central1 \
---region us-central1 --config-gs ./fleet-blue.yaml --create-or-build gameserver

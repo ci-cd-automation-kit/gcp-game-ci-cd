@@ -1,9 +1,0 @@
-tags:
-  - gaming-ci-cd-platform
-steps:
-- name: 'gcr.io/kaniko-project/executor:latest'
-  id: 'build-installer-image'
-  args:
-  - --destination=gcr.io/${_PROJECT_ID}/gaming-ci-cd-platform-installer
-  - --cache=true
-  - --cache-ttl=12h
