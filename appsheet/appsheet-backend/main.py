@@ -65,7 +65,7 @@ def AddGameServer(access_token):
         gameserver_address = response["status"]["address"]
         gameserver_port = response["status"]["ports"][0]["port"]
         gameserver_name = response["metadata"]["name"]
-        if gameserver_name.split("-")[0] == "blue":
+        if gameserver_name.split("-")[1] == "blue":
             gameserver_name = "Blue"
         else:
             gameserver_name = "Green"
@@ -223,6 +223,10 @@ def demo_appsheet_backend(request):
         # Init_K8s_Client(access_token)
         fleet_name = request_json["Data"]["FleetName"]
         print(fleet_name)
+        if fleet_name == "Blue":
+            fleet_name="supertuxkart-blue"
+        else:
+            fleet_name="supertuxkart-green"
         UpdateFleetReplica(access_token, fleet_name.lower(), int(request_json["Data"]["Replica"]))
         return ("Done", 200)
     elif request_args and 'name' in request_args:
