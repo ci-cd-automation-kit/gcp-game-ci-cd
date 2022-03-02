@@ -16,6 +16,8 @@ apiVersion: "agones.dev/v1"
 kind: Fleet
 metadata:
   name: supertuxkart-blue
+  labels:
+    game: demo
 spec:
   replicas: 0
   strategy:
